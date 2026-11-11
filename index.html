@@ -1,25 +1,74 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <title>My shop</title>
-  </head>
-  <body style="font-family: 'Google Sans', sans-serif;">
 
-    <nav>
-        <div></div>
-    </nav>
+<head>
+  <meta charset="utf-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
+  <title>PleaseBuy</title>
+</head>
 
-    <main class="flex flex-col gap-2 p-8">
-        <h1 class="text/-2xl">Products</h1>
-        <p id="message" class="text-inherit"></p>
-        <ul id="products"></ul>
-    </main>
+<body style="font-family: &quot;Google Sans&quot;, sans-serif">
+  <main class="flex flex-col gap-8 m-8">
+    <div class="flex justify-between">
+      <span id="message">Products</span>
+      <ion-icon id="openFilters" name="options" class="text-2xl cursor-pointer"></ion-icon>
+    </div>
+    <ul id="products" class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4"></ul>
+  </main>
 
-    <script src="./js/app.js"></script>
-  </body>
+  <dialog id="filterDialog" class="m-auto w-[90%] max-w-md rounded-2xl p-6 shadow-2xl backdrop:bg-black/50">
+    <form id="filterForm" class="flex flex-col gap-5">
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold">Filter products</h2>
+        <button type="button" id="closeDialog" class="text-2xl">
+          &times;
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="searchInput" class="font-medium">Search</label>
+        <input type="text" id="searchInput" placeholder="Name or description..."
+          class="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-400" />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="categoryFilter" class="font-medium">Category</label>
+        <select id="categoryFilter" class="border rounded-xl p-3 bg-white">
+          <option value="">All categories</option>
+        </select>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <label for="stockFilter" class="font-medium">In stock only</label>
+        <input type="checkbox" id="stockFilter" class="w-5 h-5" />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <label for="maxPrice" class="font-medium">Maximum price (€)</label>
+        <input type="number" id="maxPrice" min="0" step="0.01" placeholder="No price limit"
+          class="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-400" />
+      </div>
+
+      <div class="flex gap-3 mt-2">
+        <button type="reset" id="resetFilters" class="flex-1 border rounded-xl py-3">
+          Reset
+        </button>
+
+        <button type="submit" class="flex-1 bg-blue-600 text-white rounded-xl py-3">
+          Apply filters
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="./js/app.js"></script>
+</body>
+
 </html>

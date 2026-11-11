@@ -1,12 +1,16 @@
-const API = "http://localhost:3000";
+const dialog = document.querySelector("#filterDialog");
+const openFilters = document.querySelector("#openFilters");
+const closeDialog = document.querySelector("#closeDialog");
 
-async function loadProducts() {
+const filterForm = document.querySelector("#filterForm");
+
+async function displayProducts() {
     const message = document.querySelector("#message");
     const list = document.querySelector("#products");
     list.innerHTML = "";
 
     try {
-        const response = await fetch(API + "/api/products");
+        const response = await fetch("http://localhost:3000/api/products");
 
         if (!response.ok) {
             const problem = await response.json();
@@ -15,31 +19,39 @@ async function loadProducts() {
         }
 
         const products = await response.json();
-        message.textContent = products.length + " products";
+        message.textContent = `Catalog : ${products.length} products`;
 
         for (const product of products) {
             const item = document.createElement("li");
             item.innerHTML =
-                `<img src="${API}${product.image}" class="rounded-2xl">
-                <div class="px-2">
-                    <div class="flex justify-between font-bold text-2xl">
+                `<img src="http://localhost:3000${product.image}" class="rounded-2xl">
+                <div class="flex flex-col justify-between px-2">
+                    <div class="flex justify-between font-bold gap-2 text-l">
                         <p>${product.name}</p>
                         <p>€${product.price}</p>
                     </div>
-                    <p>${product.description}</p>
+                    <p class="text-sm my-2">${product.description}</p>
                     <div class="flex justify-between">
-                        <p class="bg-blue-100 rounded-2xl px-4 my-2">${product.categoryName}</p>
-                        <p class="bg-amber-100 rounded-2xl px-4 my-2">${product.stock} in stock</p>
+                        <p class="text-blue-300 rounded-2xl">${product.categoryName}</p>
+                        <p class="text-amber-300 rounded-2xl">${product.stock} in stock</p>
                     </div>
                 </div>`
                 
-            item.setAttribute('class', 'flex flex-col gap-2 py-6 sm:flex-row sm:items-center sm:gap-6 sm:py-4')
+            item.setAttribute('class', 'flex flex-col gap-4')
 
             list.appendChild(item);
         }
     } catch (error) {
-        message.textContent = "Could not reach the API. Is the server running?";
+        message.textContent = "did you use npm start to run your localhost?";
     }
 }
 
-loadProducts();
+displayProducts();
+
+openFilters.addEventListener("click", () => {
+    dialog.showModal();
+});
+
+closeDialog.addEventListener("click", () => {
+    dialog.close();
+});
