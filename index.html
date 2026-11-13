@@ -16,9 +16,18 @@
 
 <body style="font-family: &quot;Google Sans&quot;, sans-serif">
   <main class="flex flex-col gap-8 m-8">
+
+    <header class="flex justify-between items-center">
+      <h1 class="text-3xl font-bold">PleaseBuy</h1>
+      <ion-icon id="openCart" name="cart" class="text-2xl cursor-pointer"></ion-icon>
+    </header>
+
     <div class="flex justify-between">
       <span id="message">Products</span>
-      <ion-icon id="openFilters" name="options" class="text-2xl cursor-pointer"></ion-icon>
+      <div class="flex items-center gap-3">
+        <ion-icon id="resetFilters" name="refresh" class="text-2xl cursor-pointer hidden"></ion-icon>
+        <ion-icon id="openFilters" name="options" class="text-2xl cursor-pointer"></ion-icon>
+      </div>
     </div>
     <ul id="products" class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4"></ul>
   </main>
@@ -28,13 +37,13 @@
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold">Filter products</h2>
         <button type="button" id="closeDialog" class="text-2xl">
-          &times;
+          <ion-icon name="close"></ion-icon>
         </button>
       </div>
 
       <div class="flex flex-col gap-2">
         <label for="searchInput" class="font-medium">Search</label>
-        <input type="text" id="searchInput" placeholder="Name or description..."
+        <input type="text" id="searchInput" placeholder="name or description..."
           class="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-400" />
       </div>
 
@@ -56,12 +65,10 @@
           class="border rounded-xl p-3 outline-none focus:ring-2 focus:ring-blue-400" />
       </div>
 
-      <div class="flex gap-3 mt-2">
-        <button type="reset" id="resetFilters" class="flex-1 border rounded-xl py-3">
-          Reset
-        </button>
+      <p id="filterError" class="text-red-500 text-sm hidden">Choose at least one filter to apply.</p>
 
-        <button type="submit" class="flex-1 bg-blue-600 text-white rounded-xl py-3">
+      <div class="flex justify-center mt-2 w-[100%]">
+        <button type="submit" class="bg-black text-white rounded-xl py-3 w-[100%]">
           Apply filters
         </button>
       </div>
