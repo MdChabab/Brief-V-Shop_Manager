@@ -48,8 +48,7 @@ async function displayProducts() {
                       Add To Cart
                     </button>
                 </div>
-                
-                `;
+            `;
 
             listElement.setAttribute("class", "flex flex-col gap-4");
 
@@ -82,10 +81,24 @@ closeDialog.addEventListener("click", () => {
 
 //--------------------------------------------------
 
+function getCardData(card) {
+    const texts = card.querySelectorAll("p");
+
+    return {
+        name: texts[0].textContent,
+        price: Number(texts[1].textContent.replace("€", "")),
+        description: texts[2].textContent,
+        category: texts[3].textContent.trim(),
+        stock: parseInt(texts[4].textContent),
+    };
+}
+
 function getFilterValues() {
+    const categorySelected = categoriesContainer.selectedIndex > 0; 
+
     return {
         search: searchInput.value.trim().toLowerCase(),
-        category: categoriesContainer.value,
+        category: categorySelected ? categoriesContainer.selectedOptions[0].textContent.trim() : "",
         inStockOnly: stockFilter.checked,
         maxPrice: maxPrice.value === "" ? null : Number(maxPrice.value),
     };
@@ -100,15 +113,14 @@ function hasActiveFilter(filters) {
     );
 }
 
-function matchesFilters(product, filters) {
-    const text = `${product.name} ${product.description}`.toLowerCase();
+function matchesFilters(card, filters) {
+    const data = getCardData(card);
+    const text = `${data.name} ${data.description}`.toLowerCase();
 
     if (filters.search !== "" && !text.includes(filters.search)) return false;
-    if (filters.category !== "" && product.categoryName !== filters.category)
-        return false;
-    if (filters.inStockOnly && product.stock <= 0) return false;
-    if (filters.maxPrice !== null && Number(product.price) > filters.maxPrice)
-        return false;
+    if (filters.category !== "" && data.category !== filters.category) return false;
+    if (filters.inStockOnly && data.stock <= 0) return false;
+    if (filters.maxPrice !== null && data.price > filters.maxPrice) return false;
 
     return true;
 }
@@ -117,19 +129,24 @@ function filterProducts(filters) {
     const cards = list.children;
     let shown = 0;
 
-    for (let i = 0; i < allProducts.length; i++) {
-        const visible = matchesFilters(allProducts[i], filters);
+    for (const card of cards) {
+        const visible = matchesFilters(card, filters);
 
-        cards[i].style.display = visible ? "" : "none";
+        card.style.display = visible ? "" : "none";
 
         if (visible) shown++;
     }
 
-    message.textContent = `${shown} of ${allProducts.length} products match your filters`;
+    message.textContent = `${shown} of ${cards.length} products match your filters`;
 }
 
 function handleFilterSubmit(event) {
     event.preventDefault();
+
+    if (list.children.length === 0) {
+        dialog.close();
+        return;
+    }
 
     const filters = getFilterValues();
 
@@ -149,7 +166,7 @@ function resetDisplay() {
         card.style.display = "";
     }
 
-    message.textContent = `Catalog : ${allProducts.length} products`;
+    message.textContent = `Catalog : ${list.children.length} products`;
     filterForm.reset();
     filterError.classList.add("hidden");
     resetButton.classList.add("hidden");
