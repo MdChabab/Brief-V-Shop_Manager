@@ -1,7 +1,6 @@
 const message = document.querySelector("#message");
 const list = document.querySelector("#products");
 const categoriesContainer = document.getElementById("categoryFilter");
-
 const dialog = document.querySelector("#filterDialog");
 const openFilters = document.querySelector("#openFilters");
 const closeDialog = document.querySelector("#closeDialog");
@@ -28,12 +27,12 @@ async function displayProducts() {
         }
 
         const products = await response.json();
+        allProducts = products;
         message.textContent = `Catalog : ${products.length} products`;
 
         for (const product of products) {
             const listElement = document.createElement("li");
-            listElement.innerHTML = 
-            `<img src="http://localhost:3000${product.image}" class="rounded-2xl">
+            listElement.innerHTML = `<img src="http://localhost:3000${product.image}" class="rounded-2xl">
                 <div class="flex flex-col justify-between px-2">
                     <div class="flex justify-between font-bold gap-2 text-l">
                         <p>${product.name}</p>
@@ -81,96 +80,110 @@ closeDialog.addEventListener("click", () => {
 
 //--------------------------------------------------
 
-function getCardData(card) {
-    const texts = card.querySelectorAll("p");
+function hasAtLeastOneFilter() {
+    if (searchInput.value.trim() != "") return true;
+    if (categoriesContainer.value != "") return true;
+    if (stockFilter.checked == true) return true;
+    if (maxPrice.value != "") return true;
 
-    return {
-        name: texts[0].textContent,
-        price: Number(texts[1].textContent.replace("€", "")),
-        description: texts[2].textContent,
-        category: texts[3].textContent.trim(),
-        stock: parseInt(texts[4].textContent),
-    };
+    return false;
 }
 
-function getFilterValues() {
-    const categorySelected = categoriesContainer.selectedIndex > 0; 
+function matchesSearch(product) {
+    const search = searchInput.value.trim().toLowerCase();
+    const text = (product.name + " " + product.description).toLowerCase();
 
-    return {
-        search: searchInput.value.trim().toLowerCase(),
-        category: categorySelected ? categoriesContainer.selectedOptions[0].textContent.trim() : "",
-        inStockOnly: stockFilter.checked,
-        maxPrice: maxPrice.value === "" ? null : Number(maxPrice.value),
-    };
+    return text.includes(search); // an empty search is always found
 }
 
-function hasActiveFilter(filters) {
+function matchesCategory(product) {
+    if (categoriesContainer.value == "") return true;
+
+    return product.categoryName == categoriesContainer.value;
+}
+
+function matchesStock(product) {
+    if (stockFilter.checked == false) return true;
+
+    return product.stock > 0;
+}
+
+function matchesPrice(product) {
+    if (maxPrice.value == "") return true;
+
+    return product.price <= Number(maxPrice.value);
+}
+
+function productMatches(product) {
     return (
-        filters.search !== "" ||
-        filters.category !== "" ||
-        filters.inStockOnly ||
-        filters.maxPrice !== null
+        matchesSearch(product) &&
+        matchesCategory(product) &&
+        matchesStock(product) &&
+        matchesPrice(product)
     );
 }
 
-function matchesFilters(card, filters) {
-    const data = getCardData(card);
-    const text = `${data.name} ${data.description}`.toLowerCase();
+function showProducts(products) {
+    list.innerHTML = "";
 
-    if (filters.search !== "" && !text.includes(filters.search)) return false;
-    if (filters.category !== "" && data.category !== filters.category) return false;
-    if (filters.inStockOnly && data.stock <= 0) return false;
-    if (filters.maxPrice !== null && data.price > filters.maxPrice) return false;
+    for (const product of products) {
+        const listElement = document.createElement("li");
+        listElement.innerHTML = `<img src="http://localhost:3000${product.image}" class="rounded-2xl">
+            <div class="flex flex-col justify-between px-2">
+                <div class="flex justify-between font-bold gap-2 text-l">
+                    <p>${product.name}</p>
+                    <p>€${product.price}</p>
+                </div>
+                <p class="text-sm my-2">${product.description}</p>
+                <div class="flex justify-between">
+                    <p class="text-blue-300 rounded-2xl">${product.categoryName}</p>
+                    <p class="text-amber-300 rounded-2xl">${product.stock} in stock</p>
+                </div>
+                <button type="submit" class="bg-black text-white rounded-xl py-3 w-[100%] mt-4">
+                      Add To Cart
+                </button>
+            </div>`;
 
-    return true;
-}
+        listElement.setAttribute("class", "flex flex-col gap-4");
 
-function filterProducts(filters) {
-    const cards = list.children;
-    let shown = 0;
-
-    for (const card of cards) {
-        const visible = matchesFilters(card, filters);
-
-        card.style.display = visible ? "" : "none";
-
-        if (visible) shown++;
+        list.appendChild(listElement);
     }
-
-    message.textContent = `${shown} of ${cards.length} products match your filters`;
 }
 
-function handleFilterSubmit(event) {
+function filterProducts(event) {
     event.preventDefault();
 
-    if (list.children.length === 0) {
+    if (allProducts.length == 0) {
         dialog.close();
         return;
     }
 
-    const filters = getFilterValues();
-
-    if (!hasActiveFilter(filters)) {
-        filterError.classList.remove("hidden");
+    if (hasAtLeastOneFilter() == false) {
+        alert("Please choose at least one filter");
         return;
     }
 
-    filterError.classList.add("hidden");
-    filterProducts(filters);
-    resetButton.classList.remove("hidden");
+    const filteredProducts = [];
+
+    for (const product of allProducts) {
+        if (productMatches(product)) {
+            filteredProducts.push(product);
+        }
+    }
+
+    showProducts(filteredProducts);
+    message.textContent = `${filteredProducts.length} of ${allProducts.length} products`;
+    resetFilters.classList.remove("hidden");
     dialog.close();
 }
 
 function resetDisplay() {
-    for (const card of list.children) {
-        card.style.display = "";
-    }
-
-    message.textContent = `Catalog : ${list.children.length} products`;
     filterForm.reset();
-    filterError.classList.add("hidden");
-    resetButton.classList.add("hidden");
+    resetFilters.classList.add("hidden");
+
+    categoriesContainer.innerHTML = `<option value="">All categories</option>`;
+    displayProducts();
 }
 
-filterForm.addEventListener("submit", handleFilterSubmit);
-resetButton.addEventListener("click", resetDisplay);
+filterForm.addEventListener("submit", filterProducts);
+resetFilters.addEventListener("click", resetDisplay);
