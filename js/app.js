@@ -93,7 +93,7 @@ function matchesSearch(product) {
     const search = searchInput.value.trim().toLowerCase();
     const text = (product.name + " " + product.description).toLowerCase();
 
-    return text.includes(search); // an empty search is always found
+    return text.includes(search);
 }
 
 function matchesCategory(product) {
