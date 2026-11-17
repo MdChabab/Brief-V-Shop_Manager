@@ -28,16 +28,14 @@
         <ion-icon id="openFilters" name="options" class="text-2xl cursor-pointer"></ion-icon>
       </div>
     </div>
-    <ul id="products" class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4"></ul>
+    <ul id="productsList" class="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4"></ul>
   </main>
 
   <dialog id="filterDialog" class="m-auto w-[90%] max-w-md rounded-2xl p-6 shadow-2xl backdrop:bg-black/50">
     <form id="filterForm" class="flex flex-col gap-5">
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold">Filter products</h2>
-        <button type="button" id="closeDialog" class="text-2xl">
-          <ion-icon name="close"></ion-icon>
-        </button>
+        <ion-icon id="closeDialog" class="text-2xl" name="close"></ion-icon>
       </div>
 
       <div class="flex flex-col gap-2">
@@ -76,6 +74,31 @@
     </form>
   </dialog>
 
+  <dialog id="cartDialog" class="m-auto w-[90%] max-w-md rounded-2xl p-6 shadow-2xl backdrop:bg-black/50">
+    <div class="flex justify-between">
+      <h2 class="text-xl font-bold">Orders</h2>
+      <ion-icon id="closeCart" name="close" class="text-2xl" ></ion-icon>
+    </div>
+
+    <p id="emptyCartMessage" class="mt-4 hidden">No Orders Placed yet.</p>
+
+    <ul id="ordersList">
+      <!-- <li class="flex justify-evenly gap-2 m-2">
+        <img src="http://localhost:3000/images/notebook.svg" class="p-2 rounded-2xl w-[40%]">
+        <div class="flex flex-col justify-between">
+          <div class="flex justify-between">
+            <p>Grid Notebook</p>
+            <p>€4.5</p>
+          </div>
+          <label for="">Quantity
+            <input type="number" class="outline-solid" min="1" value="1">
+          </label>
+        </div>
+      </li> -->
+    </ul>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="./js/app.js"></script>
 </body>
 
