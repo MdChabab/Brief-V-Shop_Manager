@@ -10,11 +10,6 @@ const stockFilter = document.querySelector("#stockFilter");
 const maxPrice = document.querySelector("#maxPrice");
 const filterError = document.querySelector("#filterError");
 const resetButton = document.querySelector("#resetFilters");
-const cartDialog = document.getElementById("cartDialog");
-const openCart = document.getElementById("openCart");
-const closeCart = document.getElementById("closeCart");
-const emptyCartMessage = document.getElementById("emptyCartMessage");
-const ordersList = document.getElementById("ordersList");
 
 //---------------------------------------------------
 
@@ -204,6 +199,10 @@ resetFilters.addEventListener("click", resetDisplay);
 
 //----------------------------------------------------
 
+const cartDialog = document.getElementById("cartDialog");
+const openCart = document.getElementById("openCart");
+const closeCart = document.getElementById("closeCart");
+
 openCart.addEventListener("click", () => {
     cartDialog.showModal();
 });
@@ -214,7 +213,97 @@ closeCart.addEventListener("click", () => {
 
 //----------------------------------------------------
 
+const ordersList = document.getElementById("ordersList");
+const cartCount = document.querySelector("#cartCount");
+const cartTotal = document.querySelector("#cartTotal");
+const emptyCartMessage = document.querySelector("#emptyCartMessage")
+const emptyCart = document.querySelector("#emptyCart");
+
+
 let cart = [];
+
+function addToCart(productId) {
+
+    const product = allProducts.find(product => product.id == productId);
+    const existingPrd = cart.find(product => product.id == productId);
+
+    if (existingPrd) {
+
+        if (existingPrd.quantity < product.stock) {
+            existingPrd.quantity++;
+
+        } else {
+            Swal.fire("Stock limit", 
+            `Only ${product.stock} available.`, 
+            "warning");
+        }
+
+    } else {
+        cart.push({
+            ...product,
+            quantity: 1
+        });
+    }
+    
+    return cart;
+}
+
+function displayOrders(cart) {
+
+    ordersList.innerHTML = "";
+
+    if (cart.length === 0) {
+        emptyCartMessage.classList.remove("hidden");
+    } else {
+        emptyCartMessage.classList.add("hidden");
+    }
+
+    cart.forEach(order => {
+        let item = document.createElement("li")
+        item.innerHTML = `
+            <img src="http://localhost:3000${order.image}" class="rounded-xl w-20">
+
+            <div class="flex flex-col gap-2 flex-1">
+                <p class="font-bold">${order.name}</p>
+                <p>Unit price: €${order.price}</p>
+                <label>Quantity:
+                    <input
+                        type="number"
+                        min="1"
+                        max="${order.stock}"
+                        value="${order.quantity}"
+                        data-id="${order.id}"
+                        class="quantityInput border rounded p-1 w-16"
+                    >
+                </label>
+                <p>Subtotal: €${(order.price * order.quantity).toFixed(2)}</p>
+                <button
+                    class="removeButton bg-black text-white rounded-xl p-2"
+                    data-id="${order.id}">
+                    Remove
+                </button>
+            </div>
+        `;
+
+        item.setAttribute(
+            "class",
+            "flex gap-4 p-4 rounded-xl hover:shadow-xl",
+        );
+        
+        ordersList.append(item) 
+    });
+
+    const totalItems = cart.reduce(
+        (total, order) => total + order.quantity, 0
+    );
+
+    const totalPrice = cart.reduce(
+        (total, order) => total + order.price * order.quantity, 0
+    );
+
+    cartCount.textContent = totalItems;
+    cartTotal.textContent = totalPrice.toFixed(2);
+}
 
 list.addEventListener("click", function(e) {
 
@@ -228,46 +317,20 @@ list.addEventListener("click", function(e) {
 
 });
 
-function addToCart(productId) {
+function removeFromCart(productId) {
 
-    const product = allProducts.find(product => product.id == productId);
-    const existingProduct = cart.find(product => product.id == productId);
+    cart = cart.filter(order => order.id != productId);
 
-    if (existingProduct) {
-        existingProduct.quantity++;
-    } else {
-        cart.push({
-            ...product,
-            quantity: 1
-        });
+    displayOrders();
+}
+
+ordersList.addEventListener("click", function(e) {
+
+    if (e.target.classList.contains("removeButton")) {
+
+        const productId = e.target.dataset.id;
+
+        removeFromCart(productId);
     }
-    console.log(cart);
-    
-    return cart;
-}
 
-function displayOrders(cart) {
-
-    cart.forEach(order => {
-        let item = document.createElement("li")
-        item.innerHTML = `<img src="http://localhost:3000${order.image}" class="rounded-2xl w-[20%]">
-                <div class="flex flex-col justify-between px-2 w-[80%]">
-                    <div class="flex justify-between font-bold gap-2 text-l">
-                        <p>${order.name}</p>
-                        <p>€${order.price}</p>
-                    </div>
-                    <div class="flex">
-                        <label for="number">Quantity: </label>
-                        <input type="number" value="${order.quantity}" class="outline rounded-xl p-1 w-5px">
-                    </div>
-                </div>
-            `;
-
-        item.setAttribute(
-            "class",
-            "flex gap-4 p-4 rounded-xl hover:shadow-xl",
-        );
-        
-        ordersList.append(item) 
-    });
-}
+});
