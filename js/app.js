@@ -384,3 +384,117 @@ emptyCart.addEventListener("click", () => {
 
     displayOrders(cart);
 });
+
+//-------------------------------------------
+
+const customerDialog = document.getElementById("customerDialog");
+const customerForm = document.getElementById("customerForm");
+const closeCustomer = document.getElementById("closeCustomer");
+const checkout = document.getElementById("checkout");
+const submitOrder = document.getElementById("submitOrder");
+
+checkout.addEventListener("click", () => {
+    if (cart.length === 0) {
+        NotifyX.error("", {
+            title: "Your cart is empty",
+            duration: 4000,
+        });
+
+        return;
+    }
+
+    customerDialog.showModal();
+});
+
+closeCustomer.addEventListener("click", () => {
+    customerDialog.close();
+});
+
+customerForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const customer = {
+        name: document.getElementById("customerName").value.trim(),
+        email: document.getElementById("customerEmail").value.trim(),
+        address: document.getElementById("customerAddress").value.trim(),
+        city: document.getElementById("customerCity").value.trim(),
+        telephone: document.getElementById("customerTelephone").value.trim(),
+        postalCode: document.getElementById("customerPostalCode").value.trim(),
+        note: document.getElementById("customerNote").value.trim(),
+    };
+
+    submitOrder.disabled = true;
+    submitOrder.textContent = "Sending...";
+
+    try {
+        for (const order of cart) {
+
+            const reservation = {
+                ...customer,
+                productId: Number(order.id),
+                quantity: Number(order.quantity),
+            };
+
+            const response = await fetch(
+                "http://localhost:3000/api/reservations",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(reservation),
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+
+                const errorMessage = errorData && 
+                    errorData.message
+                    ? errorData.message
+                    : "Something went wrong while placing your order.";
+
+                throw new Error(errorMessage);
+            }
+        }
+
+        cart = [];
+
+        setCart();
+        displayOrders(cart);
+
+        customerForm.reset();
+
+        customerDialog.close();
+        cartDialog.close();
+
+        NotifyX.success("", {
+                duration: 4000,
+                dismissible: true,
+                position: "top-center",
+                theme: "neon",
+                animation: "spring",
+                priority: "normal",
+                title: "Your order has been placed successfully!",
+            });
+
+    } catch (error) {
+
+        console.error(error);
+        NotifyX.error("", {
+                duration: 4000,
+                dismissible: true,
+                position: "top-center",
+                theme: "neon",
+                animation: "spring",
+                priority: "normal",
+                title: "error.message",
+            });
+
+    } finally {
+
+        submitOrder.disabled = false;
+        submitOrder.textContent = "Place order";
+
+    }
+});
