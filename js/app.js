@@ -98,7 +98,7 @@ function matchesSearch(product) {
     const search = searchInput.value.trim().toLowerCase();
     const text = (product.name + " " + product.description).toLowerCase();
 
-    return text.includes(search); // an empty search is always found
+    return text.includes(search);
 }
 
 function matchesCategory(product) {
@@ -155,8 +155,8 @@ function showProducts(products) {
     }
 }
 
-function filterProducts(event) {
-    event.preventDefault();
+function filterProducts(e) {
+    e.preventDefault();
 
     if (allProducts.length == 0) {
         dialog.close();
@@ -164,10 +164,14 @@ function filterProducts(event) {
     }
 
     if (hasAtLeastOneFilter() == false) {
-        Swal.fire({
-            icon: "error",
+        NotifyX.error("", {
+            duration: 4000,
+            dismissible: true,
+            position: "top-center",
+            theme: "neon",
+            animation: "spring",
+            priority: "normal",
             title: "Choose at least 1 filter or close!",
-            target: document.querySelector('dialog[open]')
         });
         return;
     }
@@ -183,7 +187,7 @@ function filterProducts(event) {
     showProducts(filteredProducts);
     message.textContent = `${filteredProducts.length} of ${allProducts.length} products`;
     resetFilters.classList.remove("hidden");
-    dialog.close();
+    filterDialog.close();
 }
 
 function resetDisplay() {
@@ -216,40 +220,56 @@ closeCart.addEventListener("click", () => {
 const ordersList = document.getElementById("ordersList");
 const cartCount = document.querySelector("#cartCount");
 const cartTotal = document.querySelector("#cartTotal");
-const emptyCartMessage = document.querySelector("#emptyCartMessage")
+const emptyCartMessage = document.querySelector("#emptyCartMessage");
 const emptyCart = document.querySelector("#emptyCart");
 
-
 let cart = [];
+getCart();
+
+function setCart() {
+    localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+function getCart() {
+    const setCart = localStorage.getItem("cart");
+
+    if (setCart) {
+        cart = JSON.parse(setCart);
+    }
+
+    displayOrders(cart);
+}
 
 function addToCart(productId) {
-
-    const product = allProducts.find(product => product.id == productId);
-    const existingPrd = cart.find(product => product.id == productId);
+    const product = allProducts.find((product) => product.id == productId);
+    const existingPrd = cart.find((product) => product.id == productId);
 
     if (existingPrd) {
-
         if (existingPrd.quantity < product.stock) {
             existingPrd.quantity++;
-
         } else {
-            Swal.fire("Stock limit", 
-            `Only ${product.stock} available.`, 
-            "warning");
+            NotifyX.error("", {
+                duration: 4000,
+                dismissible: true,
+                position: "top-center",
+                theme: "neon",
+                animation: "spring",
+                priority: "normal",
+                title: "Not enough stock",
+            });
         }
-
     } else {
         cart.push({
             ...product,
-            quantity: 1
+            quantity: 1,
         });
     }
-    
+
+    setCart();
     return cart;
 }
 
 function displayOrders(cart) {
-
     ordersList.innerHTML = "";
 
     if (cart.length === 0) {
@@ -258,8 +278,8 @@ function displayOrders(cart) {
         emptyCartMessage.classList.add("hidden");
     }
 
-    cart.forEach(order => {
-        let item = document.createElement("li")
+    cart.forEach((order) => {
+        let item = document.createElement("li");
         item.innerHTML = `
             <img src="http://localhost:3000${order.image}" class="rounded-xl w-20">
 
@@ -285,52 +305,82 @@ function displayOrders(cart) {
             </div>
         `;
 
-        item.setAttribute(
-            "class",
-            "flex gap-4 p-4 rounded-xl hover:shadow-xl",
-        );
-        
-        ordersList.append(item) 
+        item.setAttribute("class", "flex gap-4 p-4 rounded-xl hover:shadow-xl");
+
+        ordersList.append(item);
     });
 
-    const totalItems = cart.reduce(
-        (total, order) => total + order.quantity, 0
-    );
+    const totalItems = cart.reduce((total, order) => total + order.quantity, 0);
 
     const totalPrice = cart.reduce(
-        (total, order) => total + order.price * order.quantity, 0
+        (total, order) => total + order.price * order.quantity,
+        0,
     );
 
     cartCount.textContent = totalItems;
     cartTotal.textContent = totalPrice.toFixed(2);
 }
 
-list.addEventListener("click", function(e) {
+function removeFromCart(productId) {
+    cart = cart.filter((order) => order.id != productId);
 
+    setCart();
+    displayOrders(cart);
+}
+
+ordersList.addEventListener("change", function (e) {
+    if (e.target.classList.contains("quantityInput")) {
+        const productId = e.target.dataset.id;
+        const updatedQnt = Number(e.target.value);
+
+        const order = cart.find((order) => order.id == productId);
+
+        if (!order) return;
+
+        if (updatedQnt < 1 || updatedQnt > order.stock) {
+            e.target.value = order.quantity;
+
+            NotifyX.error("", {
+                duration: 4000,
+                dismissible: true,
+                position: "top-center",
+                theme: "neon",
+                animation: "spring",
+                priority: "normal",
+                title: "Invalid quantity",
+            });
+
+            return;
+        }
+
+        order.quantity = updatedQnt;
+
+        setCart();
+
+        displayOrders(cart);
+    }
+});
+
+list.addEventListener("click", function (e) {
     if (e.target.classList.contains("listButton")) {
-
         const productId = e.target.dataset.id;
 
         addToCart(productId);
         displayOrders(cart);
     }
-
 });
 
-function removeFromCart(productId) {
-
-    cart = cart.filter(order => order.id != productId);
-
-    displayOrders();
-}
-
-ordersList.addEventListener("click", function(e) {
-
+ordersList.addEventListener("click", function (e) {
     if (e.target.classList.contains("removeButton")) {
-
         const productId = e.target.dataset.id;
 
         removeFromCart(productId);
     }
+});
 
+emptyCart.addEventListener("click", () => {
+    cart = [];
+    setCart();
+
+    displayOrders(cart);
 });

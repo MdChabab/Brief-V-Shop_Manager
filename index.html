@@ -11,6 +11,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script type="module" src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@8.0.13/dist/ionicons/ionicons.js"></script>
+
+  <script src="https://unpkg.com/notifyx@latest/dist/notifyx.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/notifyx@latest/dist/notifyx.min.css" />
   <title>PleaseBuy</title>
 </head>
 
@@ -93,13 +96,13 @@
       <button id="checkout" type="submit" class="bg-black text-white rounded-xl py-3 w-[100%] cursor-pointer">
         Checkout
       </button>
-      <button id="emptyCart" type="button" class="bg-white border rounded-xl py-3 w-[100%] cursor-pointer">
+      <button id="emptyCart" type="button"
+        class="bg-white hover:bg-red-700 hover:text-white border rounded-xl py-3 w-[100%] cursor-pointer">
         Empty Cart
       </button>
     </div>
   </dialog>
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="./js/app.js"></script>
 </body>
 
